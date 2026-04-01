@@ -1,0 +1,49 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn import metrics
+
+# Load dataset
+msg = pd.read_csv('naivetext.csv', names=['message', 'label'])
+
+print("The dimension of the dataset:", msg.shape)
+
+# Convert labels to numbers
+msg['labelnum'] = msg.label.map({'pos': 1, 'neg': 0})
+
+# Features and target
+X = msg['message']
+y = msg['labelnum']
+
+print(X)
+print(y)
+
+# Split dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42
+)
+
+print("\nThe total no of training data:", y_train.shape)
+print("\nThe total no of testing data:", y_test.shape)
+
+# Convert text to numbers
+vectorizer = CountVectorizer()
+X_train_dtm = vectorizer.fit_transform(X_train)
+X_test_dtm = vectorizer.transform(X_test)
+
+print("\nThe words or tokens in text document:\n")
+print(vectorizer.get_feature_names_out())
+
+# Train model
+clf = MultinomialNB()
+clf.fit(X_train_dtm, y_train)
+
+# Prediction
+y_pred = clf.predict(X_test_dtm)
+
+# Evaluation
+print("\nAccuracy of Classifier:", metrics.accuracy_score(y_test, y_pred))
+print("\nConfusion Matrix:\n", metrics.confusion_matrix(y_test, y_pred))
+print("\nPrecision:", metrics.precision_score(y_test, y_pred))
+print("\nRecall:", metrics.recall_score(y_test, y_pred))
